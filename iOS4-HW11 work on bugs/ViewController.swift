@@ -9,6 +9,9 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    var timer: Timer?
+    var timeLeft = 2500
+    var isWorkTime = true
     var sceneColor = UIColor.brown
     var trackColor = UIColor.green
     let workText = "Делу 25 минут..."
@@ -172,7 +175,8 @@ class ViewController: UIViewController {
     //MARK: - Actions
     
     @objc func playBtnPressed() {
-        setProgressWithAnimation(duration: Double(10))
+        timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(onTimerFires), userInfo: nil, repeats: true)
+        setProgressWithAnimation(duration: Double(timeLeft))
     }
     
        @objc func pauseBtnPressed() {
@@ -193,7 +197,7 @@ class ViewController: UIViewController {
         
         let orbit = CAKeyframeAnimation(keyPath: "position")
         orbit.path = circlePath.cgPath
-        orbit.speed = 1.0
+        orbit.speed = 100.0
         orbit.duration = duration
         progressCircle.add(orbit, forKey: "orbit")
         
@@ -201,12 +205,42 @@ class ViewController: UIViewController {
         animation.duration = duration
         animation.fromValue = 0
         animation.toValue = 1
-        animation.speed = 1.0
+        animation.speed = 100.0
         animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
         animation.repeatCount = 1
         animation.isRemovedOnCompletion = true
         progressLayer.strokeEnd = CGFloat(1)
         progressLayer.add(animation, forKey: "animation")
+    }
+    
+    @objc func onTimerFires() {
+        timeLeft -= 1
+        timerLabel.text = "\(timeConverter(time: timeLeft))"
+        
+        if (timeLeft < 0) && isWorkTime {
+            sceneColor = UIColor.green
+            trackColor = UIColor.brown
+            timeLeft = 500
+            textLabel.text = restText
+            setProgressWithAnimation(duration: Double(timeLeft))
+            isWorkTime = false
+        } else {
+            if (timeLeft < 0) && !isWorkTime {
+                sceneColor = UIColor.brown
+                trackColor = UIColor.green
+                timeLeft = 2500
+                textLabel.text = workText
+                setProgressWithAnimation(duration: Double(timeLeft))
+                isWorkTime = true
+            }
+        }
+    }
+    
+    func timeConverter (time: Int) -> String {
+        let timeWithoutMilisec = time / 100
+        let minutes = Int(timeWithoutMilisec) / 60 % 60
+        let seconds = Int(timeWithoutMilisec) % 60
+        return String(format:"%02i:%02i", minutes, seconds)
     }
 }
 
