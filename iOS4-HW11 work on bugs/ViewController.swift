@@ -172,7 +172,7 @@ class ViewController: UIViewController {
     //MARK: - Actions
     
     @objc func playBtnPressed() {
-       
+        setProgressWithAnimation(duration: Double(10))
     }
     
        @objc func pauseBtnPressed() {
@@ -181,6 +181,32 @@ class ViewController: UIViewController {
     
     @objc func resetBtnPressed() {
         
+    }
+    
+    private func setProgressWithAnimation(duration: TimeInterval) {
+        let circlePath = UIBezierPath(arcCenter: CGPoint(x: (circleView.frame.width / 2.0 - 100),
+                                                         y: circleView.frame.height / 2.0),
+                                      radius: CGFloat(100),
+                                      startAngle: CGFloat(-0.5 * Double.pi),
+                                      endAngle: CGFloat(1.5 * Double.pi),
+                                      clockwise: true)
+        
+        let orbit = CAKeyframeAnimation(keyPath: "position")
+        orbit.path = circlePath.cgPath
+        orbit.speed = 1.0
+        orbit.duration = duration
+        progressCircle.add(orbit, forKey: "orbit")
+        
+        let animation = CABasicAnimation(keyPath: "strokeEnd")
+        animation.duration = duration
+        animation.fromValue = 0
+        animation.toValue = 1
+        animation.speed = 1.0
+        animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
+        animation.repeatCount = 1
+        animation.isRemovedOnCompletion = true
+        progressLayer.strokeEnd = CGFloat(1)
+        progressLayer.add(animation, forKey: "animation")
     }
 }
 
