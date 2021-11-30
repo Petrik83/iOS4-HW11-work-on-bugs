@@ -14,6 +14,10 @@ class ViewController: UIViewController {
     let workText = "Делу 25 минут..."
     let restText = "...а потехе 5 минут)))"
     
+    var progressLayer = CAShapeLayer()
+    var trackLayer = CAShapeLayer()
+    var progressCircle = CAShapeLayer()
+    
     // MARK: - interfase
     
     private lazy var playBtn: UIButton = {
@@ -66,6 +70,43 @@ class ViewController: UIViewController {
         let imageView = UIImageView()
         return imageView
     }()
+    
+    private func createCircularPath() {
+        let circlePath = UIBezierPath(arcCenter: CGPoint(x: (circleView.frame.width / 2.0),
+                                                         y: circleView.frame.height / 2.0),
+                                      radius: CGFloat(100),
+                                      startAngle: CGFloat(-0.5 * Double.pi),
+                                      endAngle: CGFloat(1.5 * Double.pi),
+                                      clockwise: true)
+        
+        trackLayer.path = circlePath.cgPath
+        trackLayer.fillColor = UIColor.clear.cgColor
+        trackLayer.strokeColor = sceneColor.cgColor
+        trackLayer.lineWidth = 3.0;
+        trackLayer.strokeEnd = 1.0
+        circleView.layer.addSublayer(trackLayer)
+        
+        progressLayer.path = circlePath.cgPath
+        progressLayer.fillColor = UIColor.clear.cgColor
+        progressLayer.strokeColor = trackColor.cgColor
+        progressLayer.lineWidth = 3.0;
+        progressLayer.strokeEnd = 0.0
+        circleView.layer.addSublayer(progressLayer)
+        
+        let smallCirclePath = UIBezierPath(arcCenter: CGPoint(x: circleView.frame.width / 2.0,
+                                                              y: (circleView.frame.height / 2.0) - 100),
+                                           radius: CGFloat(10),
+                                           startAngle: CGFloat(-0.5 * Double.pi),
+                                           endAngle: CGFloat(1.5 * Double.pi),
+                                           clockwise: true)
+        
+        progressCircle.path = smallCirclePath.cgPath
+        progressCircle.fillColor = UIColor.white.cgColor
+        progressCircle.strokeColor = sceneColor.cgColor
+        progressCircle.lineWidth = 3.0;
+        progressCircle.strokeEnd = 1.0
+        circleView.layer.addSublayer(progressCircle)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,6 +118,11 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
             super.didReceiveMemoryWarning()
         }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.createCircularPath()
+    }
 
     // MARK: - View settings
     
