@@ -10,9 +10,7 @@ import UIKit
 class ViewController: UIViewController {
     
     var timer: Timer?
-    var timeLeft = 500
-    
-    
+    var timeLeft = 2500
     var isWorkTime = true
     var sceneColor = UIColor.brown
     var trackColor = UIColor.green
@@ -22,8 +20,6 @@ class ViewController: UIViewController {
     var progressLayer = CAShapeLayer()
     var trackLayer = CAShapeLayer()
     var progressCircle = CAShapeLayer()
-    
-    
     
     // MARK: - interfase
     
@@ -41,8 +37,6 @@ class ViewController: UIViewController {
         var pauseBtn = UIButton()
         pauseBtn.tintColor = sceneColor
         pauseBtn.isHidden = true
-        
-        
         pauseBtn.backgroundColor = UIColor.clear
         pauseBtn.setImage(UIImage(systemName: "pause", withConfiguration: UIImage.SymbolConfiguration(pointSize: 40)), for: .normal)
         pauseBtn.addTarget(self, action: #selector(pauseBtnPressed), for: .touchUpInside)
@@ -65,7 +59,6 @@ class ViewController: UIViewController {
         timerLabel.font = .systemFont(ofSize: 30)
         timerLabel.text = "00:00" //timeConverter(time: timeLeft)
         return timerLabel
-        
     }()
     
     private lazy var textLabel: UILabel = {
@@ -79,7 +72,6 @@ class ViewController: UIViewController {
     private let circleView: UIImageView = {
         let imageView = UIImageView()
         return imageView
-        
     }()
     
     private func createCircularPath() {
@@ -118,24 +110,23 @@ class ViewController: UIViewController {
         progressCircle.strokeEnd = 1.0
         circleView.layer.addSublayer(progressCircle)
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
         viewHierarchy()
         setupLayout()
-        
-        }
+    }
     
     override func didReceiveMemoryWarning() {
-            super.didReceiveMemoryWarning()
-        }
+        super.didReceiveMemoryWarning()
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         self.createCircularPath()
     }
-
+    
     // MARK: - View settings
     
     private func viewHierarchy() {
@@ -148,7 +139,6 @@ class ViewController: UIViewController {
     }
     
     private func setupLayout() {
-        
         circleView.translatesAutoresizingMaskIntoConstraints = false
         circleView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         circleView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
@@ -185,6 +175,7 @@ class ViewController: UIViewController {
     
     @objc func playBtnPressed() {
         timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(onTimerFires), userInfo: nil, repeats: true)
+        
         switch timeLeft {
         case 500, 2500, 150000, 30000:
             setProgressWithAnimation(duration: Double(timeLeft))
@@ -192,6 +183,7 @@ class ViewController: UIViewController {
             resumeLayer(layer: progressCircle)
             resumeLayer(layer: progressLayer)
         }
+        
         playBtn.isHidden = true
         pauseBtn.isHidden = false
     }
@@ -288,7 +280,6 @@ class ViewController: UIViewController {
     func pauseLayer(layer: CALayer) {
         let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
         layer.speed = 0.0
-        
         layer.timeOffset = pausedTime
     }
     
@@ -304,6 +295,5 @@ class ViewController: UIViewController {
     func removeLayer(layer: CALayer) {
         layer.removeAllAnimations()
     }
-    
 }
 
