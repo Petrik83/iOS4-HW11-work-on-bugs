@@ -9,6 +9,11 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    var timer: Timer?
+    var timeLeft = 500
+    
+    
+    var isWorkTime = true
     var sceneColor = UIColor.brown
     var trackColor = UIColor.green
     let workText = "Делу 25 минут..."
@@ -17,6 +22,8 @@ class ViewController: UIViewController {
     var progressLayer = CAShapeLayer()
     var trackLayer = CAShapeLayer()
     var progressCircle = CAShapeLayer()
+    
+    
     
     // MARK: - interfase
     
@@ -34,6 +41,8 @@ class ViewController: UIViewController {
         var pauseBtn = UIButton()
         pauseBtn.tintColor = sceneColor
         pauseBtn.isHidden = true
+        
+        
         pauseBtn.backgroundColor = UIColor.clear
         pauseBtn.setImage(UIImage(systemName: "pause", withConfiguration: UIImage.SymbolConfiguration(pointSize: 40)), for: .normal)
         pauseBtn.addTarget(self, action: #selector(pauseBtnPressed), for: .touchUpInside)
@@ -56,6 +65,7 @@ class ViewController: UIViewController {
         timerLabel.font = .systemFont(ofSize: 30)
         timerLabel.text = "00:00" //timeConverter(time: timeLeft)
         return timerLabel
+        
     }()
     
     private lazy var textLabel: UILabel = {
@@ -69,6 +79,7 @@ class ViewController: UIViewController {
     private let circleView: UIImageView = {
         let imageView = UIImageView()
         return imageView
+        
     }()
     
     private func createCircularPath() {
@@ -113,6 +124,7 @@ class ViewController: UIViewController {
         setupView()
         viewHierarchy()
         setupLayout()
+        
         }
     
     override func didReceiveMemoryWarning() {
@@ -172,15 +184,126 @@ class ViewController: UIViewController {
     //MARK: - Actions
     
     @objc func playBtnPressed() {
-       
+        timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(onTimerFires), userInfo: nil, repeats: true)
+        switch timeLeft {
+        case 500, 2500, 150000, 30000:
+            setProgressWithAnimation(duration: Double(timeLeft))
+        default:
+            resumeLayer(layer: progressCircle)
+            resumeLayer(layer: progressLayer)
+        }
+        playBtn.isHidden = true
+        pauseBtn.isHidden = false
     }
     
-       @objc func pauseBtnPressed() {
-        
+    @objc func pauseBtnPressed() {
+        timer?.invalidate()
+        playBtn.isHidden = false
+        pauseBtn.isHidden = true
+        pauseLayer(layer: progressCircle)
+        pauseLayer(layer: progressLayer)
     }
     
     @objc func resetBtnPressed() {
-        
+        timer?.invalidate()
+        timeLeft = 2500
+        sceneColor = .brown
+        trackColor = .green
+        changeSceneColor(color: sceneColor)
+        timerLabel.text = "\(timeConverter(time: timeLeft))"
+        textLabel.text = workText
+        playBtn.isHidden = false
+        pauseBtn.isHidden = true
+        resumeLayer(layer: progressLayer)
+        resumeLayer(layer: progressCircle)
+        removeLayer(layer: progressLayer)
+        removeLayer(layer: progressCircle)
     }
+    
+    private func setProgressWithAnimation(duration: TimeInterval) {
+        let circlePath = UIBezierPath(arcCenter: CGPoint(x: (circleView.frame.width / 2.0 - 100),
+                                                         y: circleView.frame.height / 2.0),
+                                      radius: CGFloat(100),
+                                      startAngle: CGFloat(-0.5 * Double.pi),
+                                      endAngle: CGFloat(1.5 * Double.pi),
+                                      clockwise: true)
+        
+        let orbit = CAKeyframeAnimation(keyPath: "position")
+        orbit.path = circlePath.cgPath
+        orbit.speed = 100.0
+        orbit.duration = duration
+        progressCircle.add(orbit, forKey: "orbit")
+        
+        let animation = CABasicAnimation(keyPath: "strokeEnd")
+        animation.duration = duration
+        animation.fromValue = 0
+        animation.toValue = 1
+        animation.speed = 100.0
+        animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
+        animation.repeatCount = 1
+        animation.isRemovedOnCompletion = true
+        progressLayer.strokeEnd = CGFloat(1)
+        progressLayer.add(animation, forKey: "animation")
+    }
+    
+    @objc func onTimerFires() {
+        timeLeft -= 1
+        timerLabel.text = "\(timeConverter(time: timeLeft))"
+        
+        if (timeLeft < 0) && isWorkTime {
+            sceneColor = UIColor.green
+            trackColor = UIColor.brown
+            changeSceneColor(color: sceneColor)
+            timeLeft = 500
+            textLabel.text = restText
+            setProgressWithAnimation(duration: Double(timeLeft))
+            isWorkTime = false
+        } else {
+            if (timeLeft < 0) && !isWorkTime {
+                sceneColor = UIColor.brown
+                trackColor = UIColor.green
+                changeSceneColor(color: sceneColor)
+                timeLeft = 2500
+                textLabel.text = workText
+                setProgressWithAnimation(duration: Double(timeLeft))
+                isWorkTime = true
+            }
+        }
+    }
+    
+    func timeConverter (time: Int) -> String {
+        let timeWithoutMilisec = time / 100
+        let minutes = Int(timeWithoutMilisec) / 60 % 60
+        let seconds = Int(timeWithoutMilisec) % 60
+        return String(format:"%02i:%02i", minutes, seconds)
+    }
+    
+    func changeSceneColor (color: UIColor) {
+        playBtn.tintColor = color
+        pauseBtn.tintColor = color
+        timerLabel.textColor = color
+        textLabel.textColor = color
+    }
+    
+    func pauseLayer(layer: CALayer) {
+        let pausedTime = layer.convertTime(CACurrentMediaTime(), from: nil)
+        layer.speed = 0.0
+        
+        layer.timeOffset = pausedTime
+    }
+    
+    func resumeLayer(layer: CALayer) {
+        let pausedTime = layer.timeOffset
+        layer.speed = 1.0
+        layer.timeOffset = 0.0
+        layer.beginTime = 0.0
+        let timeSincePause = layer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
+        layer.beginTime = timeSincePause
+    }
+    
+    func removeLayer(layer: CALayer) {
+        layer.removeAllAnimations()
+    }
+    
 }
 
